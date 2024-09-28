@@ -3,40 +3,29 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /* eslint-disable react/prop-types */
 const Slide = ({ children, isActive }) => (
-  <div
-    className={`h-full w-full ${
-      isActive ? "block" : "hidden"
-    } p-8 overflow-y-auto`}
-  >
+  <div className={`h-full w-full ${isActive ? "block" : "hidden"} p-8 overflow-y-auto`}>
     {children}
   </div>
 );
 
-// Componente para el código
 const CodeBlock = ({ children }) => (
   <>
-    <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+    <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto my-4 text-sm">
       <code>{children}</code>
     </pre>
-    <br />
-    <Result>{children}</Result>
-  </> 
+    <div className="bg-blue-600 text-white p-4 rounded-lg overflow-x-auto my-4">
+      <div dangerouslySetInnerHTML={{ __html: children }} />
+    </div>
+  </>
 );
 
 const CssCodeBlock = ({ children }) => (
-  <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+  <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto my-4 text-sm">
     <code>{children}</code>
   </pre>
 );
 
-const Result = ({ children }) => (
-  <div className="bg-blue-600 text-white p-4 rounded-lg overflow-x-auto ">
-    <div dangerouslySetInnerHTML={{ __html: children }} />
-  </div>
-);
-
-// Componente para la lista de elementos
-const ListItem = ({ children }) => <li className="mb-2">{children}</li>;
+const ListItem = ({ children }) => <li className="mb-4">{children}</li>;
 
 // Componentes para cada diapositiva individual
 const WelcomeSlide = () => (
@@ -367,51 +356,49 @@ export default function SlideComponent({ onStateChange }) {
     <ConclusionSlide key="conclusion" />,
   ];
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gradient-to-r from-cyan-200 via-blue-500 to-white-500">
-      {currentSlide > 0 && currentSlide < slides.length - 1 && (
-        <button
-          onClick={prevSlide}
-          className="p-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition duration-200 mb-4"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-      )}
-
-      <div className="bg-white rounded-lg shadow-lg p-8 w-3/4 h-3/4 overflow-y-auto">
+    <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-r from-cyan-200 via-blue-500 to-white-500 p-8">
+      <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-4xl h-[80vh] relative">
         {slides.map((slide, index) => (
           <Slide key={index} isActive={index === currentSlide}>
             {slide}
           </Slide>
         ))}
+        
+        <div className="absolute bottom-4 left-0 right-0 flex justify-between px-8">
+          {currentSlide > 0 && (
+            <button
+              onClick={prevSlide}
+              className="p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+          {currentSlide < slides.length - 1 && (
+            <button
+              onClick={nextSlide}
+              className="p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          )}
+        </div>
       </div>
 
-      {currentSlide < slides.length - 1 && (
-        <button
-          onClick={nextSlide}
-          className="p-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition duration-200 mt-4"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-      )}
-
       {currentSlide === slides.length - 1 && (
-        <footer className="fixed bottom-0 left-0 right-0 text-center text-gray-500 text-sm p-4 bg-white border-t border-gray-300">
+        <div className="mt-8 text-center">
           <button
             onClick={toggleState}
-            className="bg-blue-500 text-white rounded px-4 py-2"
+            className="bg-green-500 text-white font-bold rounded-full px-8 py-3 shadow-lg hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400"
           >
             Comenzar Ejercicios
           </button>
-        </footer>
+        </div>
       )}
     </div>
   );

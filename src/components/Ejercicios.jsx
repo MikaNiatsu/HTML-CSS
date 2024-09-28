@@ -47,18 +47,18 @@ const htmlExercises = [
     id: 4,
     title: "Enlaces",
     description: "Los enlaces se crean con <a> y el atributo href.",
-    task: "Crea un enlace a https://www.ejemplo.com que diga 'Visita Ejemplo.com' y que se abra en una nueva pestaña.",
+    task: "Crea un enlace a https://es.lipsum.com/ que diga 'Visita Ejemplo.com' y que se abra en una nueva pestaña.",
     initialCode: "<a></a>",
-    solution: `<a href="https://www.ejemplo.com" target="_blank">Visita Ejemplo.com</a>`,
+    solution: `<a href="https://es.lipsum.com/" target="_blank">Visita Ejemplo.com</a>`,
   },
   {
     id: 5,
     title: "Imágenes",
     description:
       "Las imágenes se insertan con <img>. Siempre incluye los atributos src y alt.",
-    task: "Inserta una imagen con src='/api/placeholder/300/200' y alt='Imagen de ejemplo'.",
+    task: "Inserta una imagen con src='https://picsum.photos/200/300' y alt='Imagen de ejemplo'.",
     initialCode: "<img>",
-    solution: `<img src="/api/placeholder/300/200" alt="Imagen de ejemplo">`,
+    solution: `<img src="https://picsum.photos/200/300" alt="Imagen de ejemplo">`,
   },
   {
     id: 6,
@@ -252,6 +252,130 @@ const htmlExercises = [
   }
 ];
 /* eslint-disable react/prop-types */
+const validateSolution = (userCode, solution, exerciseId) => {
+  const normalizeHTML = (html) => {
+    if (typeof html !== 'string') {
+      console.error('Expected html to be a string, but got:', typeof html);
+      return '';
+    }
+    return html.replace(/\s+/g, ' ').trim().toLowerCase();
+  };
+
+  const userNormalized = normalizeHTML(userCode);
+
+  // Función para extraer etiquetas y atributos
+  const extractTags = (code) => {
+    if (typeof code !== 'string') {
+      console.error('Expected code to be a string, but got:', typeof code);
+      return [];
+    }
+    return code.match(/<[^>]+>/g) || [];
+  };
+
+  // Función para extraer reglas CSS
+  const extractCSS = (code) => {
+    if (typeof code !== 'string') {
+      console.error('Expected code to be a string, but got:', typeof code);
+      return '';
+    }
+    const styleMatch = code.match(/<style>([\s\S]*?)<\/style>/);
+    return styleMatch ? styleMatch[1].replace(/\s+/g, ' ').trim().toLowerCase() : '';
+  };
+
+  const userTags = extractTags(userCode).map(normalizeHTML);
+  const userCSS = extractCSS(userCode);
+
+  // Validación específica para cada ejercicio
+  switch (exerciseId) {
+    case 1: // Estructura básica HTML
+      return userTags.some(tag => tag.includes('<!doctype html>')) &&
+             userTags.some(tag => tag.includes('<html')) &&
+             userTags.some(tag => tag.includes('<head>')) &&
+             userTags.some(tag => tag.includes('<title>')) &&
+             userNormalized.includes('mi primera página') &&
+             userTags.some(tag => tag.includes('<body>'));
+    
+    case 2: // Encabezados
+      return ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].every(h => 
+        userTags.some(tag => tag.includes(`<${h}`)) && userNormalized.includes(`encabezado ${h.slice(1)}`)
+      );
+    
+    case 3: // Párrafos y formato de texto
+      return userTags.filter(tag => tag.includes('<p')).length >= 2 &&
+             userTags.some(tag => tag.includes('<strong>')) &&
+             userTags.some(tag => tag.includes('<em>'));
+    
+    case 4: // Enlaces
+      return userTags.some(tag => 
+        tag.includes('href="https://es.lipsum.com/"') && 
+        tag.includes('target="_blank"')
+      ) && userNormalized.includes('visita ejemplo.com');
+    
+    case 5: // Imágenes
+      return userTags.some(tag => 
+        tag.includes('src="https://picsum.photos/200/300"') && 
+        tag.includes('alt="imagen de ejemplo"')
+      );
+    
+    case 6: // Listas
+      return userTags.some(tag => tag.includes('<ul>')) &&
+             userTags.some(tag => tag.includes('<ol>')) &&
+             userTags.filter(tag => tag.includes('<li>')).length >= 6;
+    
+    case 7: // Tablas
+      return userTags.some(tag => tag.includes('<table>')) &&
+             userTags.filter(tag => tag.includes('<tr>')).length >= 3 &&
+             userTags.some(tag => tag.includes('<th>')) &&
+             userTags.some(tag => tag.includes('<td>'));
+    
+    case 8: // Formularios
+      return userTags.some(tag => tag.includes('<form>')) &&
+             userTags.some(tag => tag.includes('type="text"')) &&
+             userTags.some(tag => tag.includes('type="email"')) &&
+             userTags.some(tag => tag.includes('type="submit"'));
+    
+    case 9: // Divs y Spans
+      return userTags.some(tag => tag.includes('<div>')) &&
+             userTags.some(tag => tag.includes('<p>')) &&
+             userTags.some(tag => tag.includes('<span')) &&
+             userNormalized.includes('style="color: red;"');
+    
+    case 10: // Semántica HTML5
+      return ['header', 'nav', 'main', 'article', 'aside', 'footer'].every(tag => 
+        userTags.some(t => t.includes(`<${tag}`))
+      );
+    
+    case 11: // Introducción a CSS
+      return userTags.some(tag => tag.includes('<p')) &&
+             userNormalized.includes('style="color: red; font-size: 20px;"');
+    
+    case 12: // Selectores CSS
+      return userCSS.includes('.destacado') &&
+             userCSS.includes('background-color: yellow') &&
+             userCSS.includes('font-weight: bold') &&
+             userTags.some(tag => tag.includes('class="destacado"'));
+    
+    case 13: // Modelo de caja
+      return userCSS.includes('width: 200px') &&
+             userCSS.includes('padding: 20px') &&
+             userCSS.includes('border: 2px solid black') &&
+             userCSS.includes('margin-top: 10px');
+    
+    case 14: // Flexbox
+      return userCSS.includes('display: flex') &&
+             userCSS.includes('justify-content: space-between') &&
+             userTags.filter(tag => tag.includes('<div>')).length >= 3;
+    
+    case 15: // Responsive Design
+      return userCSS.includes('@media') &&
+             userCSS.includes('(max-width: 600px)') &&
+             userCSS.includes('background-color: lightblue');
+    
+    default:
+      return false;
+  }
+};
+
 const Exercise = ({ exercise, onSubmit }) => {
   const [code, setCode] = useState(exercise.initialCode);
   const [preview, setPreview] = useState("");
@@ -262,17 +386,30 @@ const Exercise = ({ exercise, onSubmit }) => {
   };
 
   const handlePreview = () => {
-    setPreview(code);
+    const previewHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; }
+          </style>
+        </head>
+        <body>
+          ${code}
+        </body>
+      </html>
+    `;
+    setPreview(previewHTML);
   };
 
   const handleSubmit = () => {
-    if (code.trim() === exercise.solution.trim()) {
-      setFeedback({ type: "success", message: "¡Correcto! Buen trabajo." });
+    if (validateSolution(code, exercise.solution, exercise.id)) {
+      setFeedback({ type: "success", message: "¡Correcto! Tu solución cumple con los criterios esperados." });
       onSubmit(exercise.id, code);
     } else {
       setFeedback({
         type: "error",
-        message: "Intenta de nuevo. Tu solución no es exactamente la esperada.",
+        message: "Tu solución no cumple con todos los criterios esperados. Revisa las instrucciones e intenta de nuevo.",
       });
     }
   };
@@ -305,7 +442,11 @@ const Exercise = ({ exercise, onSubmit }) => {
       {preview && (
         <div className="border p-2 mb-2 bg-gray-100 rounded">
           <strong className="block mb-1">Vista previa:</strong>
-          <div dangerouslySetInnerHTML={{ __html: preview }} />
+          <iframe
+            srcDoc={preview}
+            className="w-full h-40 border-0"
+            title="Preview"
+          />
         </div>
       )}
       {feedback && (
@@ -330,7 +471,7 @@ const ComponentExercises = () => {
   return (
     <div className="container mx-auto p-4 max-w-3xl">
       <h1 className="text-3xl font-bold mb-6 text-center text-blue-700">
-        Práctica de HTML
+        Práctica de HTML y CSS
       </h1>
       {htmlExercises.map((exercise) => (
         <Exercise
